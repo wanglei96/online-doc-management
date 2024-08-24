@@ -1,0 +1,58 @@
+{
+  "name": "file_manage",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "@vue-office/pdf": "^2.0.2",
+    "ant-design-vue": "^4.2.3",
+    "axios": "^1.7.4",
+    "core-js": "^3.8.3",
+    "pdfjs-dist": "^4.5.136",
+    "vue": "^3.2.13",
+    "vue-demi": "^0.14.6",
+    "vue-office": "^0.0.5",
+    "vue-pdf-embed": "^2.1.0",
+    "vue-ppt": "^1.0.0",
+    "vue-router": "^4.4.3",
+    "vue3-pdfjs": "^0.1.6"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.16",
+    "@babel/eslint-parser": "^7.12.16",
+    "@babel/plugin-transform-private-methods": "^7.24.7",
+    "@vue/cli-plugin-babel": "~5.0.0",
+    "@vue/cli-plugin-eslint": "~5.0.0",
+    "@vue/cli-service": "~5.0.0",
+    "eslint": "^7.32.0",
+    "eslint-plugin-vue": "^8.0.3"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/vue3-essential",
+      "eslint:recommended"
+    ],
+    "parserOptions": {
+      "parser": "@babel/eslint-parser"
+    },
+    "rules": {
+      "vue/no-unused-components": "off"
+
+
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ]
+}
