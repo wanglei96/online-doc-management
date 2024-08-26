@@ -1,13 +1,11 @@
 <template>
   <a-layout style="min-height: 100vh " >
     <!-- 侧边栏 -->
-    <AppSidebar v-if="showSidebar" />
+    <AppSidebar v-if="showComponents" />
 
     <!-- 主内容 -->
     <a-layout>
-      <!-- <a-layout-header style="background: #fff; padding: 0">
-        <router-view name="header" />
-      </a-layout-header> -->
+      <AppHeader v-if="showComponents" />
       <a-layout-content style="margin: 24px 16px 0">
         <div style="padding: 24px; background: #fff; min-height: 600px">
           <router-view />
@@ -19,18 +17,25 @@
 
 <script>
 import AppSidebar from "@/components/AppSidebar.vue";
+// import AppHeader from "@/components/AppHeader.vue";
+
 
 export default {
   name: "App",
   components: {
     AppSidebar,
+    // AppHeader
   },
+  
   computed: {
-    showSidebar() {
-      return this.$route.path !== '/login' && this.$route.path !== '/';
+    showComponents() {
+      return this.$route.path !== '/';
     },
-  },
-};
+  
+}
+}
+
+
 </script>
 
 

@@ -7,10 +7,13 @@ from typing import List
 
 from starlette.responses import FileResponse, StreamingResponse
 
-from . import crud, crud_file, models, schemas
-from .crud_file import read_pdf_as_base64
-from .database import engine, get_db
-from .auth.security import get_current_user
+
+from app import models, schemas, crud
+from app import crud_file
+from app.auth.security import get_current_user
+from app.crud_file import read_pdf_as_base64
+from app.database import engine, get_db
+
 from app.auth import auth
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 

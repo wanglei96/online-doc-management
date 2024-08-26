@@ -3,7 +3,7 @@ import os
 from sqlalchemy.orm import Session
 from fastapi import UploadFile
 from io import BytesIO
-from . import models
+from app import models
 from reportlab.pdfgen import canvas
 from PyPDF2 import PdfReader, PdfWriter
 from reportlab.lib.pagesizes import letter

@@ -2,7 +2,7 @@
 
     <div>
       <a-space style="width: 95%; text-align: right">
-       <a-button type="primary" style="width: 100px, margin: 10"  @click="showModal" >上传文件</a-button> 
+       <a-button type="primary" style="width: 100px"  @click="showModal" >上传文件</a-button> 
       </a-space>
       
       <a-modal v-model:open="open" title="上传文件" ok-text="上传" cancel-text="取消"  @ok="handleUp">

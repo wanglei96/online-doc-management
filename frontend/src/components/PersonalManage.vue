@@ -65,6 +65,12 @@
                 </a>
             </template>
 
+        <template v-else-if="column.key === 'is_admin'">
+            <span>
+                {{ record.is_admin === 1 ? '管理员' : '普通用户' }}
+            </span>
+        </template>
+
             <template v-else-if="column.key === 'action'">
                 <span>
                     <a-popconfirm
@@ -85,7 +91,7 @@
 </template>
 <script setup>
 import { user_info , register_user , delete_personal } from '@/api';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted , reactive} from 'vue';
 import { message } from 'ant-design-vue';
 
 const columns = [
@@ -95,7 +101,7 @@ const columns = [
         key: 'username',
     },
     {
-        title: '是否管理员',
+        title: '角色',
         key: 'is_admin',
         dataIndex: 'is_admin',
     },
@@ -116,22 +122,24 @@ const options = ref([
         label: '管理员',
     },
 ]);
-const value = ref([]);
+const value = reactive([]);
 const handleChange = value => {
     register_info.is_admin = value;
     console.log(`selected ${value}`);
 };
 
-const register_info = {
+const register_info = reactive({
     "username": ref(""),
     "password": ref(""),
     "is_admin": ref(),
-};
+    
+});
 
 const reset_register_info = () =>{
-   register_info.username = ref("")
-   register_info.password = ref("")
+   register_info.username = null
+   register_info.password = null
    register_info.is_admin = ref()
+   value.values = null
 }
 
 
@@ -165,6 +173,11 @@ const register =async () => {
     } catch (error) {
         console.error(error);
     }
+};
+
+const handleSubmit =() => {
+    open.value = false;
+        getpersonal();
 }
 
 
@@ -187,7 +200,7 @@ const getpersonal = async () => {
 
 onMounted(() => {
     getpersonal();
-    reset_register_info();
+    // reset_register_info();
 });
 // export { };
 </script>

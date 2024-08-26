@@ -4,9 +4,7 @@ from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
 
-from .. import schemas, models, crud
-from ..database import get_db
-from ..config import settings
+from app.config import settings
 
 from fastapi.security import OAuth2PasswordBearer
 

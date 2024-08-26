@@ -1,10 +1,11 @@
 from fastapi import Depends, HTTPException, status
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
-from . import auth
-from .. import schemas, models, crud
-from ..database import get_db
-from ..config import settings
+
+from app import crud
+from app.auth import auth
+from app.database import get_db
+from app.config import settings
 
 SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = settings.ALGORITHM
