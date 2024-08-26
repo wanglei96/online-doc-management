@@ -142,16 +142,11 @@ def get_file(filename: str):
     headers = {"Content-Disposition": "inline"}
     return FileResponse(file_path, media_type='application/pdf', headers=headers)
 
-
-@app.get("/get_pdf_base64/")
-def get_pdf_base64(file_name: str):
-    try:
-        # 假设 PDF 文件存放在 "uploaded_files" 目录下
-        file_path = f"./files/{file_name}"
-        base64_pdf = read_pdf_as_base64(file_path)
-        return {"base64_pdf": base64_pdf}
-    except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="File not found")
+@app.get("/current_user_role")
+def get_current_user_role(db: Session = Depends(get_db), 
+                          current_user: schemas.User = Depends(get_current_user)
+                          ):
+    return {'role': current_user.is_admin}
 
 
 

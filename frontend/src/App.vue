@@ -6,7 +6,7 @@
     <!-- 主内容 -->
     <a-layout>
       <AppHeader v-if="showComponents" />
-      <a-layout-content style="margin: 24px 16px 0">
+      <a-layout-content >
         <div style="padding: 24px; background: #fff; min-height: 600px">
           <router-view />
         </div>
@@ -17,14 +17,14 @@
 
 <script>
 import AppSidebar from "@/components/AppSidebar.vue";
-// import AppHeader from "@/components/AppHeader.vue";
+import AppHeader from "@/components/AppHeader.vue";
 
 
 export default {
   name: "App",
   components: {
     AppSidebar,
-    // AppHeader
+    AppHeader
   },
   
   computed: {
@@ -46,7 +46,7 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  /* margin-top: 60px; */
 }
 body {
   margin: 0;

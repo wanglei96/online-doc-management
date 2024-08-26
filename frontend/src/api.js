@@ -92,3 +92,7 @@ export const delete_file = (file_id) => {
 export const get_pdf_base64 = (file_name) => {
     return api.get('/get_pdf_base64/', { file_name: file_name });
 }
+
+export const get_current_user_role = () => {
+    return api.get('/current_user_role/');
+}

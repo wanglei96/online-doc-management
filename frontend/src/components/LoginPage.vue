@@ -11,7 +11,7 @@
         <a-form-item
           label="Username"
           name="username"
-          :rules="[{ required: true, message: 'Please input your username!' }]"
+          :rules="[{ required: true, message: '请输入用户名!' }]"
         >
           <a-input v-model:value="formState.username" />
         </a-form-item>
@@ -19,7 +19,7 @@
         <a-form-item
           label="Password"
           name="password"
-          :rules="[{ required: true, message: 'Please input your password!' }]"
+          :rules="[{ required: true, message: '请输入密码!' }]"
         >
           <a-input-password v-model:value="formState.password" />
         </a-form-item>
@@ -70,6 +70,8 @@ export default defineComponent({
                 message.error('Invalid username or password');
             }
         };
+
+        
 
         return {
             formState,

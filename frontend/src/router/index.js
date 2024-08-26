@@ -32,7 +32,7 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-    if (to.path !== '/login') {
+    if (to.path !== '/') {
         // 确保侧边栏在登录页面之外的所有页面中都显示
     }
     next();
@@ -43,7 +43,7 @@ router.beforeEach((to, from, next) => {
     const isAuthenticated = !!getToken();  // Replace with actual authentication check
 
     if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
-        next('/login');  // Redirect to login page if not authenticated
+        next('/');  // Redirect to login page if not authenticated
     } else {
         next();  // Proceed to the route
     }

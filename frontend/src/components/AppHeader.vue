@@ -1,14 +1,13 @@
 <template>
     <a-layout>
-      <a-layout-header style="background: #fff; padding: 0">
+      <a-layout-header style="background: #fff; padding: 0; display: flex; justify-content: space-between; align-items: center;">
         <router-view name="header" />
-        <a-space style="width: 100%; text-align: right">
-
-            <a-button style="margin-left: 8px" @click="logout">退出</a-button>
+        <a-space>
+          <a-button style="margin-left: 1130px" @click="logout">退出</a-button>
         </a-space>
-        
       </a-layout-header>
     </a-layout>
+
 </template>
 
 <script>

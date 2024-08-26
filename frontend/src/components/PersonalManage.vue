@@ -1,7 +1,7 @@
 <template>
     <div style="margin-left: 10px;" >
         <a-space style="width: 100%; text-align: right">
-            <a-button type="primary" @click="showModal" style="margin-left: 10px;" >添加用户</a-button>    
+            <a-button v-if = "is_superuser" type="primary" @click="showModal" style="margin-left: 10px;" >添加用户</a-button>    
         </a-space>
         
         <a-divider />
@@ -80,7 +80,7 @@
                         @confirm="handleDelete(record.id)"
              
                       >
-                        <a href="#" >删除</a>
+                        <a v-if = "is_superuser" href="#" >删除</a>
                       </a-popconfirm>
                     <a-divider type="vertical" />
      
@@ -90,8 +90,8 @@
     </a-table>
 </template>
 <script setup>
-import { user_info , register_user , delete_personal } from '@/api';
-import { ref, onMounted , reactive} from 'vue';
+import { user_info , register_user , delete_personal , get_current_user_role } from '@/api';
+import { ref, onMounted , reactive, computed } from 'vue';
 import { message } from 'ant-design-vue';
 
 const columns = [
@@ -198,9 +198,26 @@ const getpersonal = async () => {
     }
 };
 
+const role = ref('');
+
+const getrole = async () => {
+    try {
+        const response = await get_current_user_role();
+        role.value = response.data.role;
+        // message.info(response.data.message);
+        console.info(role)
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+const is_superuser = computed(() => {
+    return role.value !== 0
+})
+
 onMounted(() => {
     getpersonal();
-    // reset_register_info();
+    getrole();
 });
 // export { };
 </script>

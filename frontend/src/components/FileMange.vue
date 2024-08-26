@@ -2,7 +2,7 @@
 
     <div>
       <a-space style="width: 95%; text-align: right">
-       <a-button type="primary" style="width: 100px"  @click="showModal" >上传文件</a-button> 
+       <a-button v-if = "is_superuser" type="primary" style="width: 100px"  @click="showModal" >上传文件</a-button> 
       </a-space>
       
       <a-modal v-model:open="open" title="上传文件" ok-text="上传" cancel-text="取消"  @ok="handleUp">
@@ -62,7 +62,7 @@
                     @confirm="deletefile(item.id)"
              
                   >
-                    <a href="#" >删除</a>
+                    <a href="#" v-if = "is_superuser">删除</a>
                   </a-popconfirm>
                 <!-- <a key="list-loadmore-more" @click="deletefile(item.id)">删除</a> -->
               </template>
@@ -74,10 +74,9 @@
 
 
 <script setup>
-import { listFiles, uploadfile , delete_file } from '@/api';
-import { ref, onMounted} from 'vue';
+import { listFiles, uploadfile , delete_file , get_current_user_role } from '@/api';
+import { ref, onMounted, computed} from 'vue';
 import { message } from 'ant-design-vue';
-// import * as pdfjsLib from 'pdfjs-dist';
 
 const data = ref([]);
 
@@ -110,6 +109,7 @@ const deletefile = async (id) => {
 
 onMounted(() => {
   getfiles();
+  getrole();
 });
 
 
@@ -175,6 +175,23 @@ const handleUp = async () => {
     message.error("上传失败！");
   }
 };
+
+const role = ref('');
+
+const getrole = async () => {
+  try {
+    const response = await get_current_user_role();
+    role.value = response.data.role;
+    // message.info(response.data.message);
+    console.info(role)
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+const is_superuser = computed(() => {
+  return role.value !== 0
+})
 
 </script>
 
