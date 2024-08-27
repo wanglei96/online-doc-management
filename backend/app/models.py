@@ -18,7 +18,7 @@ class File(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     filename = Column(String(255), unique=True, index=True)  # 指定长度为255
+    file_tag = Column(String(255), unique=True, index=True)
     upload_time = Column(DateTime, default=datetime.datetime.now)
     uploader_id = Column(Integer, ForeignKey("users.id"))
-
     uploader = relationship("User")

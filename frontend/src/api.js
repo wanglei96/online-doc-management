@@ -32,9 +32,15 @@ export const login = (username, password) => {
         }
 )};
 
-export const listFiles = () => {
+export const listFiles = (tag) => {
     // console.log('11111111111');
-    return api.get('/files/',);
+    if (!tag || tag === '全部') {
+        return api.get('/files/');
+    }
+    return api.get('/files/', {params: {
+        file_tag: tag
+    }
+    });
 };
 
 export const uploadfile = (token, formData) => {
@@ -95,4 +101,12 @@ export const get_pdf_base64 = (file_name) => {
 
 export const get_current_user_role = () => {
     return api.get('/current_user_role/');
+}
+
+export const edit_file = (file_info) => {
+    return api.post('/edit_file/', file_info);
+}
+
+export const get_file_tags = () => {
+    return api.get('/all_file_tags/');
 }

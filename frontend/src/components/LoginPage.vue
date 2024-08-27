@@ -9,7 +9,7 @@
         @finish="handleSubmit"
       >
         <a-form-item
-          label="Username"
+          label="用户名"
           name="username"
           :rules="[{ required: true, message: '请输入用户名!' }]"
         >
@@ -17,7 +17,7 @@
         </a-form-item>
 
         <a-form-item
-          label="Password"
+          label="密码"
           name="password"
           :rules="[{ required: true, message: '请输入密码!' }]"
         >

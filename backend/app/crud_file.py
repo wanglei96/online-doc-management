@@ -55,7 +55,7 @@ def add_watermark(pdf_file, watermark_text):
     return output_stream  # 返回修改后的 PDF 数据流
 
 
-def upload_file(db: Session, file: UploadFile, uploader_id: int, is_admin: int):
+def upload_file(db: Session, file: UploadFile, file_tag: str, uploader_id: int, is_admin: int):
     if is_admin == 1:
         # 生成带水印的PDF数据流
         watermarked_pdf_stream = add_watermark(file, "慧至半径")
@@ -69,7 +69,7 @@ def upload_file(db: Session, file: UploadFile, uploader_id: int, is_admin: int):
             f.write(watermarked_pdf_stream.read())
 
         # 保存文件信息到数据库
-        db_file = models.File(filename=file.filename, uploader_id=uploader_id)
+        db_file = models.File(filename=file.filename, file_tag = file_tag, uploader_id=uploader_id)
         db.add(db_file)
         db.commit()
         db.refresh(db_file)
@@ -87,11 +87,52 @@ def delete_file(db: Session, file_id: int, is_admin: int):
     return {"message": "没有权限，文件删除失败"}
 
 
-def get_files(db: Session):
+def get_files(db: Session, file_tag = None):
+    if file_tag is not None:
+        return db.query(models.File).filter(models.File.file_tag == file_tag).all()
     return db.query(models.File).all()
+
+def get_all_file_tags(db: Session):
+    tags = db.query(models.File.file_tag).distinct().all()
+    tags = [tag[0] for tag in tags]
+    return tags
 
 
 def read_pdf_as_base64(file_path):
     with open(file_path, "rb") as pdf_file:
         encoded_string = base64.b64encode(pdf_file.read())
         return encoded_string.decode('utf-8')
+    
+def edit_file(db: Session, file_id: int, filename: str, file_tag: str, is_admin: int):
+    file = db.query(models.File).filter(models.File.id == file_id).first()
+    if file is None:
+        return {"message": "文件不存在"}
+    if is_admin != 1:
+        return {"message": "没有权限，文件修改失败"}
+    if file_tag is None:
+        return {"message": "文件标签不能为空"}
+    if change_file_name(file.filename, filename):
+        file.file_tag = file_tag
+        file.filename = filename
+        db.commit()
+        db.refresh(file)
+        return file
+    else:
+        return {"message": "文件修改失败"}
+
+
+def change_file_name(old_filename, new_filename):
+    # specify the directory path and the old file name
+    dir_path = './files'
+
+    # construct the full file paths
+    old_file_path = os.path.join(dir_path, old_filename)
+    new_file_path = os.path.join(dir_path, new_filename)
+    print(old_file_path, new_file_path)
+    # check if the old file exists
+    if os.path.exists(old_file_path):
+        # rename the file
+        os.rename(old_file_path, new_file_path)
+        return True
+    else:
+        return False

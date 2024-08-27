@@ -23,6 +23,7 @@ class User(UserBase):
 class File(BaseModel):
     id: int
     filename: str
+    file_tag: str
 
 class FileDelete(BaseModel):
     id: int

@@ -26,8 +26,23 @@
             <p class="ant-upload-text">点击上传文件</p>
             <p class="ant-upload-hint">支持(.pdf)</p>
           </div>
+          
         </a-upload-dragger>
-
+        <a-form
+              :model="file_tag"
+              name="basic"
+              :label-col="{ span: 5 }"
+              :wrapper-col="{ span: 0 }"
+              autocomplete="off"
+            >
+        <a-form-item
+                  label="文件标签"
+                  name="tag"
+                  :rules="[{ required: true, message: '请输入文件标签!' }]"
+                >
+          <a-input v-model:value="file_tag.tag" />
+        </a-form-item>
+        </a-form>
         <!-- <div class="r_b">
           <a-button type="dashed" style="margin-right: 50px">取消</a-button>
           <a-button type="primary" @click="handleUp">提交</a-button>
@@ -44,17 +59,21 @@
       <template #renderItem="{ item }">
 
         <a-list-item>
-          <a-list-item-meta >
+          <a-list-item-meta>
             <template #title>
               <a class="left-aligned">{{ item.filename }}</a>
             </template>
             <template #avatar>
               <a-avatar src="/wendang.png" />
             </template>
+            <!-- <template #description>
+              <a class="left-aligned">{{ item.file_tag }}</a>
+            </template> -->
           </a-list-item-meta>
           <template #actions>
                 <a key="list-loadmore-edit" :href="'/web/viewer.html?file=' + handlefilepath(item.filename)"
                 >预览</a>
+                <a @click="handlefileopen(item)" v-if = "is_superuser">修改</a>
                 <a-popconfirm
                     title="是否确定删除？"
                     ok-text="是"
@@ -66,28 +85,65 @@
                   </a-popconfirm>
                 <!-- <a key="list-loadmore-more" @click="deletefile(item.id)">删除</a> -->
               </template>
+              <div>{{item.file_tag}}</div>
         </a-list-item>
       </template>
     </a-list>
+    <a-modal v-model:open="file_open" title="修改文件信息" ok-text="修改" cancel-text="取消"  @ok="edit_file_info">
+              <a-form
+              :model="file_info"
+              name="basic"
+            
+              :label-col="{ span: 3 }"
+              :wrapper-col="{ span: 0 }"
+              autocomplete="off"
+            >
+              <a-form-item
+                label="文件名"
+                name="filename"
+                :rules="[{ required: true, message: '请输入文件名!' }]"
+              >
+                <a-input  v-model:value="file_info.filename" />
+              </a-form-item>
+              <a-form-item
+                label="标签"
+                name="file_tag"
+                :rules="[{ required: true, message: '请输入文件标签!' }]"
+              >
+                <a-input v-model:value="file_info.file_tag" />
+              </a-form-item>
+             
+                </a-form>
+          </a-modal>
   </div>
+  <!-- <a-modal v-model:open="open_file" title="预览" cancel-text="关闭" width="800px" height="500px">
+  <iframe id="pdfViewer" width="600" height="400"></iframe>
+  </a-modal> -->
 </template>
 
 
 <script setup>
-import { listFiles, uploadfile , delete_file , get_current_user_role } from '@/api';
-import { ref, onMounted, computed} from 'vue';
+import { listFiles, uploadfile , delete_file , get_current_user_role , edit_file } from '@/api';
+import { ref, onMounted, computed, reactive , watch } from 'vue';
 import { message } from 'ant-design-vue';
+import { useRoute } from 'vue-router';
 
+const route = useRoute();
 const data = ref([]);
+const fileType = ref(route.query.fileType || '');
 
 const handlefilepath = (filename) => {
+  
   return process.env.VUE_APP_API_BASE_URL + '/files/' + filename
 }
 
 
 const getfiles = async () => {
   try {
-    const response = await listFiles();
+    console.log(fileType.value)
+    console.log('fileType.value:'+fileType.value);
+    const response = await listFiles(fileType.value);
+    file_info.file_tag = fileType.value;
     data.value = response.data;
   } catch (error) {
     console.error(error);
@@ -112,7 +168,10 @@ onMounted(() => {
   getrole();
 });
 
-
+watch(() => route.query.fileType, (newFileType) => {
+  fileType.value = newFileType || '';
+  getfiles();
+}, { immediate: true });
 
 const open = ref(false);
 const showModal = () => {
@@ -157,19 +216,26 @@ const handleChange = (info) => {
   }
 };
 
+const file_tag = reactive({
+  tag: ref("")
+});
+
 // 调用上传字典的接口
 const handleUp = async () => {
   try {
     // 组件含有的方法，获取文件的相关信息
     const formData = new FormData(); //创建的对象，用于封装要上传的文件和其他需要传递的数据
     formData.append("file", fileList.value[0]);
-
+    formData.append("file_tag", file_tag.tag);
+    
+    console.log(formData);
     console.log(fileList.value[0]);
     // console.log(localStorage.getItem('token'));
     const response = await uploadfile(localStorage.getItem('token'), formData);
     console.log(response);
     open.value = false;
     getfiles();
+    location.reload();
   } catch (error) {
     console.error(error);
     message.error("上传失败！");
@@ -192,6 +258,35 @@ const getrole = async () => {
 const is_superuser = computed(() => {
   return role.value !== 0
 })
+
+const file_info = reactive({
+  id: ref(0),
+  filename: ref(""),
+  file_tag: ref(""),
+})
+
+const file_open = ref(false)
+
+const handlefileopen = (item) => {
+  file_open.value = true;
+  file_info.id = item.id;
+  file_info.filename = item.filename;
+  file_info.file_tag = item.file_tag;
+}
+
+const edit_file_info = async () => {
+  try {
+    const response = await edit_file(file_info);
+    console.log(response);
+    file_open.value = false;
+    getfiles();
+    message.success('修改成功');
+    location.reload();
+  } catch (error) {
+    message.error('修改失败');
+    console.error(error);
+  }
+}
 
 </script>
 

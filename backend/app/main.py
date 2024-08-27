@@ -1,9 +1,11 @@
 import logging
 
-from fastapi import FastAPI, Depends, HTTPException, File, UploadFile,  status
+from fastapi import FastAPI, Depends, HTTPException, File, UploadFile,  status, Form
+# from fastapi.params import Form
 from fastapi.security import OAuth2PasswordBearer
+from pyasn1.type import tag
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 
 from starlette.responses import FileResponse, StreamingResponse
 
@@ -73,6 +75,7 @@ def del_user(
 @app.post("/upload/", response_model=schemas.File)
 def upload_file(
     file: UploadFile = File(...), 
+    file_tag: Optional[str] = Form(None),
     db: Session = Depends(get_db), 
     current_user: schemas.User = Depends(get_current_user)  # 获取当前用户
 ):
@@ -90,17 +93,27 @@ def upload_file(
     """
     if not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=400, detail="只能上传pdf文件")
-    return crud_file.upload_file(db=db, file=file, uploader_id=current_user.id, is_admin=current_user.is_admin)
+    if file_tag is None:
+        raise HTTPException(status_code=400, detail="标签不能为空")
+    return crud_file.upload_file(db=db, file=file, uploader_id=current_user.id, file_tag=file_tag, is_admin=current_user.is_admin)
 
 @app.delete("/delete_file/")
 def delele_file(file_info: schemas.FileDelete, db: Session = Depends(get_db),
                 current_user: schemas.User = Depends(get_current_user)):
     return crud_file.delete_file(db=db, file_id=file_info.id, is_admin=current_user.is_admin)
 
-@app.get("/files/", response_model=List[schemas.File])
-def list_files(db: Session = Depends(get_db)):
-    return crud_file.get_files(db=db)
+@app.post("/edit_file/")
+def edit_file(file_info: schemas.File, db: Session = Depends(get_db),
+                current_user: schemas.User = Depends(get_current_user)):
+    return crud_file.edit_file(db=db, file_id=file_info.id, filename = file_info.filename, file_tag=file_info.file_tag, is_admin=current_user.is_admin) 
 
+@app.get("/files/", response_model=List[schemas.File])
+def list_files(db: Session = Depends(get_db), file_tag=None):
+    return crud_file.get_files(db=db, file_tag=file_tag)
+
+@app.get("/all_file_tags/")
+def all_file_tags(db: Session = Depends(get_db)):
+    return crud_file.get_all_file_tags(db=db)
 
 @app.post("/token", response_model=schemas.Token, )
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
