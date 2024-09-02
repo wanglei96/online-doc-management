@@ -13,7 +13,6 @@ from starlette.responses import FileResponse, StreamingResponse
 from app import models, schemas, crud
 from app import crud_file
 from app.auth.security import get_current_user
-from app.crud_file import read_pdf_as_base64
 from app.database import engine, get_db
 
 from app.auth import auth
@@ -111,9 +110,9 @@ def edit_file(file_info: schemas.File, db: Session = Depends(get_db),
 def list_files(db: Session = Depends(get_db), file_tag=None):
     return crud_file.get_files(db=db, file_tag=file_tag)
 
-@app.get("/all_file_tags/")
-def all_file_tags(db: Session = Depends(get_db)):
-    return crud_file.get_all_file_tags(db=db)
+# @app.get("/all_file_tags/")
+# def all_file_tags(db: Session = Depends(get_db)):
+#     return crud_file.get_all_file_tags(db=db)
 
 @app.post("/token", response_model=schemas.Token, )
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
@@ -162,4 +161,23 @@ def get_current_user_role(db: Session = Depends(get_db),
     return {'role': current_user.is_admin}
 
 
+@app.post("/create_file_tag/", response_model=schemas.FileTagCreate)
+def create_file_tag_endpoint(file_tag: schemas.FileTagCreate, db: Session = Depends(get_db),
+                             current_user: schemas.User = Depends(get_current_user)):
+    return crud_file.create_file_tag(db, file_tag, current_user.is_admin)
+
+@app.get("/file_tags/", response_model=List[schemas.Tags])
+def read_file_tags(db: Session = Depends(get_db)):
+    return crud_file.get_file_tags(db)
+
+@app.delete("/delete_file_tag/")
+def delete_file_tag(file_tag_info: schemas.deleteTag, db: Session = Depends(get_db),
+                    current_user: schemas.User = Depends(get_current_user)):
+    return crud_file.delete_file_tag_by_id(db, file_tag_info.id, current_user.is_admin)
+
+
+@app.post("/edit_file_tag/")
+def edit_file_tag(file_tag_info: schemas.EditTag, db: Session = Depends(get_db),
+                    current_user: schemas.User = Depends(get_current_user)):
+    return crud_file.edit_file_tag(db, file_tag_info, current_user.is_admin)
 

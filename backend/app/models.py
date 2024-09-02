@@ -22,3 +22,11 @@ class File(Base):
     upload_time = Column(DateTime, default=datetime.datetime.now)
     uploader_id = Column(Integer, ForeignKey("users.id"))
     uploader = relationship("User")
+    
+class FileTag(Base):
+    __tablename__ = "file_tags"
+
+    id = Column(Integer, primary_key=True, index=True)
+    tag_name = Column(String(255), unique=True, index=True)  # 文件标签名称，唯一
+    sort_order = Column(Integer, index=True)  # 序号字段用于排序
+

@@ -40,13 +40,16 @@
                   name="tag"
                   :rules="[{ required: true, message: '请输入文件标签!' }]"
                 >
-          <a-input v-model:value="file_tag.tag" />
+          <!-- <a-input v-model:value="file_tag.tag" /> -->
+          <a-select
+                  v-model:value="file_tag.tag"
+                  style="width: 100%"
+                  :options="options"
+                  @change="handleselectChange"
+                  placeholder = '请选择文件标签'
+              ></a-select>
         </a-form-item>
         </a-form>
-        <!-- <div class="r_b">
-          <a-button type="dashed" style="margin-right: 50px">取消</a-button>
-          <a-button type="primary" @click="handleUp">提交</a-button>
-        </div> -->
       </div>
 
       </a-modal>
@@ -66,12 +69,10 @@
             <template #avatar>
               <a-avatar src="/wendang.png" />
             </template>
-            <!-- <template #description>
-              <a class="left-aligned">{{ item.file_tag }}</a>
-            </template> -->
+
           </a-list-item-meta>
           <template #actions>
-                <a key="list-loadmore-edit" :href="'/web/viewer.html?file=' + handlefilepath(item.filename)"
+                <a key="list-loadmore-edit" @click="handle_open_file(item.filename)"
                 >预览</a>
                 <a @click="handlefileopen(item)" v-if = "is_superuser">修改</a>
                 <a-popconfirm
@@ -110,33 +111,79 @@
                 name="file_tag"
                 :rules="[{ required: true, message: '请输入文件标签!' }]"
               >
-                <a-input v-model:value="file_info.file_tag" />
+                 <a-select
+                    ref="select"
+                    v-model:value="file_info.tag"
+                    style="width: 100%"
+                    placeholder = '请选择文件标签'
+                    :options="options"
+                    @change="handleeditselectChange"
+                
+                ></a-select>
               </a-form-item>
              
                 </a-form>
           </a-modal>
   </div>
-  <!-- <a-modal v-model:open="open_file" title="预览" cancel-text="关闭" width="800px" height="500px">
-  <iframe id="pdfViewer" width="600" height="400"></iframe>
-  </a-modal> -->
+  <a-modal 
+    v-model:open="open_file" 
+    title="预览" 
+    cancel-text="关闭" 
+    width="100%"
+    wrap-class-name="full-modal"
+    @contextmenu.prevent
+    footer=''
+  >
+  <a-watermark content="内部资料 禁止外传" style="height: 100%;">
+    <iframe
+      :src="file_url"
+      style="width: 100%; height: 100%"
+      @contextmenu.prevent
+
+    ></iframe>
+    </a-watermark>
+  </a-modal>
 </template>
 
 
 <script setup>
-import { listFiles, uploadfile , delete_file , get_current_user_role , edit_file } from '@/api';
+import { listFiles, uploadfile , delete_file , get_current_user_role , edit_file ,
+  get_file_tags
+} from '@/api';
 import { ref, onMounted, computed, reactive , watch } from 'vue';
 import { message } from 'ant-design-vue';
 import { useRoute } from 'vue-router';
 
+
 const route = useRoute();
 const data = ref([]);
 const fileType = ref(route.query.fileType || '');
+
+
+
+document.addEventListener('contextmenu', function (event) {
+  event.preventDefault();
+});
 
 const handlefilepath = (filename) => {
   
   return process.env.VUE_APP_API_BASE_URL + '/files/' + filename
 }
 
+const open_file = ref(false);
+document.addEventListener('contextmenu', function (event) {
+  event.preventDefault();
+});
+
+
+const file_url = ref("");
+
+const handle_open_file = (filename) => {
+  open_file.value = true;
+  file_url.value = "/web/viewer.html?file="+handlefilepath(filename) 
+  // console.log(file_url.value)
+
+}
 
 const getfiles = async () => {
   try {
@@ -156,7 +203,8 @@ const deletefile = async (id) => {
     const response = await delete_file(id);
     message.success('删除成功');
     console.info(response)
-    getfiles();
+    // getfiles();
+    location.reload();
   } catch (error) {
     console.error(error);
   }
@@ -166,6 +214,7 @@ const deletefile = async (id) => {
 onMounted(() => {
   getfiles();
   getrole();
+  get_tags();
 });
 
 watch(() => route.query.fileType, (newFileType) => {
@@ -203,11 +252,11 @@ const handleChange = (info) => {
     newFileList.splice(0, 1);
     fileList.value = newFileList;
   }
-  console.log(fileList.value.length);
+  // console.log(fileList.value.length);
   // 文件上传状态的控制
   const status = info.file.status;
   if (status !== "uploading") {
-    console.log(info.file, info.fileList);
+    // console.log(info.file, info.fileList);
   }
   if (status === "done") {
     message.success(`${info.file.name} file uploaded successfully.`);
@@ -228,8 +277,8 @@ const handleUp = async () => {
     formData.append("file", fileList.value[0]);
     formData.append("file_tag", file_tag.tag);
     
-    console.log(formData);
-    console.log(fileList.value[0]);
+    // console.log(formData);
+    // console.log(fileList.value[0]);
     // console.log(localStorage.getItem('token'));
     const response = await uploadfile(localStorage.getItem('token'), formData);
     console.log(response);
@@ -288,17 +337,50 @@ const edit_file_info = async () => {
   }
 }
 
+
+const options = reactive([])
+
+const get_tags = async () => { 
+  try { 
+    const response = await get_file_tags();
+    options.splice(0, options.length, ...response.data.map(item => ({
+      value: item.tag_name,
+      label: item.tag_name,
+    })));
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+const handleselectChange = value => {
+  file_tag.tag = value;
+}
+
+const handleeditselectChange = value => {
+  file_info.file_tag = value;
+} 
+
 </script>
 
-<style scoped>
+<style lang="less">
 .left-aligned {
   text-align: left; /* 确保文本左对齐 */
   display: block;   /* 确保文本占据整行 */
 }
-.ppt-preview {
-  margin-top: 20px;
-  height: 600px;
-  /* 调整为你需要的高度 */
-  
+.full-modal {
+  .ant-modal {
+    max-width: 100%;
+    top: 0;
+    padding-bottom: 0;
+    margin: 0;
+  }
+  .ant-modal-content {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh);
+  }
+  .ant-modal-body {
+    flex: 1;
+  }
 }
 </style>

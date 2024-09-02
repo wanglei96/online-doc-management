@@ -1,21 +1,6 @@
 <template>
-    <!-- <a-layout-sider collapsible theme="dark" style="background-color: #0e293c;" 
-     :style="{ overflow: 'auto', height: '100vh', position: 'relative', left: 20, top: 0, bottom: 0 } ">
-        <div class="logo"/>
-        <a-menu theme="dark"  default-selected-keys="['1']" mode="inline" style="background-color: #12354e;">
-            <a-menu-item key="1">
-                <a-icon type=file />
-                <span>文件列表</span>
-                <router-link to="/FileMange"></router-link>
-            </a-menu-item>
-            <a-menu-item key="2" v-if = "is_superuser">
-                    <a-icon type=person />
-                    <span>人员管理</span>
-                    <router-link to="/PersonalManage"></router-link>
-                </a-menu-item>
-        </a-menu>
-    </a-layout-sider> -->
-    <a-layout-sider collapsible theme="dark" 
+
+    <a-layout-sider collapsible theme="dark" :trigger="null"
         :style="{ overflow: 'auto', height: '100vh', position: 'relative', left: 0, top: 0, bottom: 0 }">
         <div class="logo"/>
         <a-menu
@@ -34,7 +19,7 @@
 <script>
 import { get_current_user_role , get_file_tags } from '@/api';
 import { reactive, ref, h , computed, onMounted ,onBeforeMount } from 'vue';
-import { FilePdfOutlined, TeamOutlined ,TagOutlined } from '@ant-design/icons-vue';
+import { FilePdfOutlined, TeamOutlined ,TagOutlined,SettingOutlined } from '@ant-design/icons-vue';
 import { useRouter } from 'vue-router';
 
 export default {
@@ -62,10 +47,10 @@ setup() {
                 const response = await get_file_tags();
                 // console.log("Response Data:", response.data);
                 // console.log("Data Type:", Array.isArray(response.data)); // 应该返回 true
-                tags.concat = response.data;
+                tags.splice(0, tags.length, ...response.data.map(item => item.tag_name));
                 if (Array.isArray(response.data)) {
-                    response.data.unshift('全部');
-                    const newItems = response.data.map(tag => getItem(tag, tag, () => h(TagOutlined)));
+                    tags.unshift('全部');
+                    const newItems = tags.map(tag => getItem(tag, tag, () => h(TagOutlined)));
                     // console.log(items);
                     // console.log(newItems);
                     items[0].children = newItems; // 更新菜单项的子菜单
@@ -76,11 +61,11 @@ setup() {
                 if (role_resp !== 1) {
                     console.log("role_resp:"+role_resp); 
                     console.log(items)
-                    const indexToRemove = items.findIndex(item => item.label === '人员管理');
+                    const indexToRemove = items.findIndex(item => item.label === '人员管理' || item.label === '配置中心');
 
                     // 如果找到索引，则使用 splice 方法移除项
                     if (indexToRemove !== -1) {
-                        items.splice(indexToRemove, 1);
+                        items.splice(indexToRemove, 2);
                     }
                     console.log("items::::"+items)
                 }
@@ -94,18 +79,25 @@ setup() {
             [
             getItem('文件管理', 'filemanage', () => h(FilePdfOutlined), []),
             getItem('人员管理', 'personmanage', () => h(TeamOutlined)),
+            getItem('配置中心', 'configcenter', () => h(SettingOutlined), [getItem('文件标签配置', 'tagconfig', () => h(SettingOutlined))]
+        ),
         ]
     );
         const handleClick = (e) => {
             console.log('click', e);
             const key = e.key; // 获取点击的菜单项 key
-            if (tags.concat.includes(key))  {
+            if (tags.includes(key))  {
                 router.push({ path: '/FileMange',  query: { fileType: key } });
                 console.log('key:'+key);
             }
             switch (key) {
                 case 'personmanage':
                     router.push('/PersonalManage');
+                    break;
+                case 'tagconfig':
+                    router.push('/FileTagsConfig');
+                    break;
+                default:
                     break;
             }
         };
@@ -172,10 +164,10 @@ return {
 
 <style scoped>
 .logo {
-    height: 32px;
-    margin: 16px;
+    height: 42px;
+    margin: 18px;
     margin-bottom: 20px;
-    background: rgba(201, 223, 244, 0.853);
+    /* background: rgb(238, 204, 79); */
     background-image: url('/public/logo.PNG'); /* 设置背景图片 */
     background-size: cover; /* 使图片覆盖整个div */
     background-position: center; /* 图片居中显示 */

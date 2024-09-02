@@ -1,5 +1,6 @@
 import base64
 import os
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from fastapi import UploadFile
 from io import BytesIO
@@ -136,3 +137,88 @@ def change_file_name(old_filename, new_filename):
         return True
     else:
         return False
+
+
+def get_file_tag(db: Session, tag_id: int):
+    return db.query(models.FileTag).filter(models.FileTag.id == tag_id).first()
+
+def get_file_tags(db: Session):
+    return db.query(models.FileTag).order_by(models.FileTag.sort_order).all()
+
+def create_file_tag(db: Session, file_tag: str, is_admin: int):
+    if is_admin != 1:
+        return {"message": "没有权限，标签创建失败"}
+    
+    if file_tag.sort_order is None:
+        # 如果没有提供 sort_order，则将其设为最大 sort_order + 1
+        max_sort_order = db.query(func.max(models.FileTag.sort_order)).scalar()
+        file_tag.sort_order = (max_sort_order + 1) if max_sort_order is not None else 0
+    else:
+        # 如果提供了 sort_order，则将该位置后的所有标签的 sort_order + 1
+        db.query(models.FileTag).filter(
+            models.FileTag.sort_order >= file_tag.sort_order
+        ).update({models.FileTag.sort_order: models.FileTag.sort_order + 1})
+    
+    db_file_tag = models.FileTag(tag_name=file_tag.tag_name, sort_order=file_tag.sort_order)
+    db.add(db_file_tag)
+    db.commit()
+    db.refresh(db_file_tag)
+    return db_file_tag
+
+
+def delete_file_tag_by_id(db: Session, tag_id: int, is_admin: int):
+    tag = db.query(models.FileTag).filter(models.FileTag.id == tag_id).first()
+    if tag and is_admin == 1:
+        db.delete(tag)
+        db.commit()
+
+        # 删除后，重新排序
+        remaining_tags = db.query(models.FileTag).order_by(models.FileTag.sort_order).all()
+        for index, remaining_tag in enumerate(remaining_tags):
+            remaining_tag.sort_order = index
+        db.commit()
+        
+        return {"message": "标签删除成功"}
+    return {"message": "没有权限，标签删除失败"}
+
+def edit_file_tag(db: Session, file_tag_info: dict, is_admin: int):
+    if is_admin != 1:
+        return {"message": "没有权限，标签修改失败"}
+    
+    tag = db.query(models.FileTag).filter(models.FileTag.id == file_tag_info.id).first()
+    if not tag:
+        return {"message": "标签不存在"}
+
+    # 更新 tag_name
+    if file_tag_info.new_tag_name:
+        tag.tag_name = file_tag_info.new_tag_name
+    
+    # 更新 sort_order
+    if file_tag_info.new_sort_order is not None and file_tag_info.new_sort_order != tag.sort_order:
+        # max_sort_order = db.query(func.max(models.FileTag.sort_order)).scalar()
+
+        if file_tag_info.new_sort_order > tag.sort_order:
+            # 将 sort_order 在 (tag.sort_order, new_sort_order] 范围内的标签的 sort_order - 1
+            db.query(models.FileTag).filter(
+                models.FileTag.sort_order > tag.sort_order,
+                models.FileTag.sort_order <= file_tag_info.new_sort_order
+            ).update({models.FileTag.sort_order: models.FileTag.sort_order - 1})
+        else:
+            # 将 sort_order 在 [new_sort_order, tag.sort_order) 范围内的标签的 sort_order + 1
+            db.query(models.FileTag).filter(
+                models.FileTag.sort_order >= file_tag_info.new_sort_order,
+                models.FileTag.sort_order < tag.sort_order
+            ).update({models.FileTag.sort_order: models.FileTag.sort_order + 1})
+        
+        # 更新当前标签的 sort_order
+        tag.sort_order = file_tag_info.new_sort_order
+
+        # 处理所有大于 new_sort_order 的标签
+        db.query(models.FileTag).filter(
+            models.FileTag.sort_order > max(file_tag_info.new_sort_order, tag.sort_order)
+        ).update({models.FileTag.sort_order: models.FileTag.sort_order})
+
+    db.commit()
+    db.refresh(tag)
+    return tag
+

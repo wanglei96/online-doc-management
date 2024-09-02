@@ -95,9 +95,9 @@ export const delete_file = (file_id) => {
     );
 };
 
-export const get_pdf_base64 = (file_name) => {
-    return api.get('/get_pdf_base64/', { file_name: file_name });
-}
+// export const get_pdf_base64 = (file_name) => {
+//     return api.get('/get_pdf_base64/', { file_name: file_name });
+// }
 
 export const get_current_user_role = () => {
     return api.get('/current_user_role/');
@@ -108,5 +108,24 @@ export const edit_file = (file_info) => {
 }
 
 export const get_file_tags = () => {
-    return api.get('/all_file_tags/');
+    return api.get('/file_tags/');
 }
+
+export const add_file_tag = (tag_info) => {
+    return api.post('/create_file_tag/', tag_info);
+}
+
+export const delete_file_tag = (tag_id) => {
+    const body = { id: tag_id, }
+    return api.delete('/delete_file_tag/', 
+        {
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data: body
+        });
+}
+
+export const edit_file_tag = (tag_info) => {
+    return api.post('/edit_file_tag/', tag_info);
+}   

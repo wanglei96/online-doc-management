@@ -5,6 +5,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Login from '@/components/LoginPage.vue';
 import FileMange from '@/components/FileMange.vue';
 import PersonalManage from '@/components/PersonalManage.vue';
+import FileTagsConfig from '@/components/FileTagsConfig.vue';
 
 const routes = [
     {
@@ -22,6 +23,12 @@ const routes = [
         path: '/PersonalManage',
         name: 'PersonalManage',
         component: PersonalManage,
+        meta: { requiresAuth: true },
+    },
+    {
+        path: '/FileTagsConfig',
+        name: 'FileTagsConfig',
+        component: FileTagsConfig,
         meta: { requiresAuth: true },
     },
 ];
