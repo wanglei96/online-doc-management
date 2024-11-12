@@ -5,30 +5,41 @@ from sqlalchemy.orm import Session
 from fastapi import UploadFile
 from io import BytesIO
 from app import models
+import io
+from PyPDF2 import PdfWriter, PdfReader
+from reportlab.lib import pagesizes  # 页面样式
 from reportlab.pdfgen import canvas
 from PyPDF2 import PdfReader, PdfWriter
-from reportlab.lib.pagesizes import letter
+from reportlab.lib.units import cm
+from reportlab.pdfbase import pdfmetrics  # 注册字体
+from reportlab.pdfbase.ttfonts import TTFont  # 字体类
+from reportlab.pdfgen import canvas
+
+pdfmetrics.registerFont(TTFont('FZHTK', './files/FZHTK.TTF'))
 
 
-def create_watermark(watermark_text):
-    # 创建一个字节流来保存PDF文件
-    packet = BytesIO()
+def create_water_mark(text):
+    packet = io.BytesIO()
+    # 创建一个带有水印的新PDF页
+    my_canvas = canvas.Canvas(packet, pagesizes.A4)
+    # 设置水印字体
 
-    # 创建一个PDF对象并写入水印文本
-    can = canvas.Canvas(packet, pagesize=letter)
-    can.setFont("Helvetica", 40)
-    can.setFillColorRGB(200, 200, 200)  # 浅灰色
-    can.saveState()
-    can.translate(500, 300)
-    can.rotate(45)  # 旋转水印
-    can.drawCentredString(0, 0, watermark_text)
-    can.restoreState()
-    can.save()
-
-    # 移动到字节流的开头
+    my_canvas.setFont("FZHTK", 12)
+    # 填充色
+    my_canvas.setFillColorRGB(0, 0, 0)
+    # 透明度
+    my_canvas.setFillAlpha(0.2)
+    # 设置字体旋转度数
+    my_canvas.rotate(25)
+    # x轴的3cm处，到24结束，步长是10
+    for i in range(3, 24, 6):
+        # y轴的
+        for j in range(-5, 30, 5):
+            my_canvas.drawString(i * cm, j * cm, text)
+    my_canvas.save()
     packet.seek(0)
+    return PdfReader(packet)
 
-    return packet
 
 def add_watermark(pdf_file, watermark_text):
     # 将 UploadFile 对象转换为字节流
@@ -39,8 +50,8 @@ def add_watermark(pdf_file, watermark_text):
     writer = PdfWriter()
 
     # 创建水印PDF
-    watermark_pdf = create_watermark(watermark_text)
-    watermark_reader = PdfReader(watermark_pdf)
+    # watermark_pdf = create_water_mark(watermark_text)
+    watermark_reader = create_water_mark(watermark_text)
     watermark_page = watermark_reader.pages[0]
 
     # 对每一页添加水印

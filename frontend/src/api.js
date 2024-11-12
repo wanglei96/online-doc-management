@@ -4,7 +4,7 @@ import axios from 'axios';
 // Create an axios instance with a default configuration
 const api = axios.create({
     baseURL: process.env.VUE_APP_API_BASE_URL,  // Base URL from environment variable
-    timeout: 1000,  // Optional: Set request timeout
+    timeout: 5000,  // Optional: Set request timeout
 });
 
 // 添加请求拦截器
@@ -24,7 +24,7 @@ api.interceptors.request.use(config => {
 // Define API methods
 export const login = (username, password) => {
     // console.log(username, password);
-    return api.post('/token', { grant_type: 'password', username, password, scope: 'scope', client_id : 'client_id', client_secret: 'client_secret' },
+    return api.post('/api/token', { grant_type: 'password', username, password, scope: 'scope', client_id : 'client_id', client_secret: 'client_secret' },
         {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
@@ -35,9 +35,9 @@ export const login = (username, password) => {
 export const listFiles = (tag) => {
     // console.log('11111111111');
     if (!tag || tag === '全部') {
-        return api.get('/files/');
+        return api.get('/api/files/');
     }
-    return api.get('/files/', {params: {
+    return api.get('/api/files/', {params: {
         file_tag: tag
     }
     });
@@ -45,33 +45,33 @@ export const listFiles = (tag) => {
 
 export const uploadfile = (token, formData) => {
     // console.log('11111111111');
-    return api.post('/upload/', formData,
+    return api.post('/api/upload/', formData,
         {
             headers: {
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'multipart/form-data'
             }
-        }
+        },
     );
 };
 
 
 export const user_info = () => {
-    return api.get('/users/');
+    return api.get('/api/users/');
 }
 
 // Add more API methods as needed
 
 
 export const register_user = (user_info) => {
-    return api.post('/register/', user_info);
+    return api.post('/api/register/', user_info);
 }
 
 
 export const delete_personal = (user_id) => {
     const body = { id: user_id, }
     console.log(body);
-    return api.delete('/delete_user/',
+    return api.delete('/api/delete_user/',
         {
             headers: {
                 'Content-Type': 'application/json'
@@ -85,7 +85,7 @@ export const delete_personal = (user_id) => {
 export const delete_file = (file_id) => {
     const body = { id: file_id, }
     console.log(body);
-    return api.delete('/delete_file/',
+    return api.delete('/api/delete_file/',
         {
             headers: {
                 'Content-Type': 'application/json'
@@ -100,24 +100,24 @@ export const delete_file = (file_id) => {
 // }
 
 export const get_current_user_role = () => {
-    return api.get('/current_user_role/');
+    return api.get('/api/current_user_role/');
 }
 
 export const edit_file = (file_info) => {
-    return api.post('/edit_file/', file_info);
+    return api.post('/api/edit_file/', file_info);
 }
 
 export const get_file_tags = () => {
-    return api.get('/file_tags/');
+    return api.get('/api/file_tags/');
 }
 
 export const add_file_tag = (tag_info) => {
-    return api.post('/create_file_tag/', tag_info);
+    return api.post('/api/create_file_tag/', tag_info);
 }
 
 export const delete_file_tag = (tag_id) => {
     const body = { id: tag_id, }
-    return api.delete('/delete_file_tag/', 
+    return api.delete('/api/delete_file_tag/', 
         {
             headers: {
                 'Content-Type': 'application/json'
@@ -127,5 +127,5 @@ export const delete_file_tag = (tag_id) => {
 }
 
 export const edit_file_tag = (tag_info) => {
-    return api.post('/edit_file_tag/', tag_info);
+    return api.post('/api/edit_file_tag/', tag_info);
 }   
