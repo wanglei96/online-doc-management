@@ -62,6 +62,12 @@ def get_users(db: Session = Depends(get_db)):
     """
     return db.query(models.User).all()
 
+@app.post("/api/edit_users/")
+def edit_users(user_info: schemas.UserEdit,
+               db: Session = Depends(get_db),
+               current_user: schemas.User = Depends(get_current_user)):
+    return crud.edit_users(db=db, user_info=user_info, is_admin=current_user.is_admin)
+
 @app.delete("/api/delete_user/")
 def del_user(
     user_info: schemas.UserDelete,

@@ -67,6 +67,9 @@ export const register_user = (user_info) => {
     return api.post('/api/register/', user_info);
 }
 
+export const edit_user = (user_info) => {
+    return api.post('/api/edit_users/', user_info);
+}
 
 export const delete_personal = (user_id) => {
     const body = { id: user_id, }

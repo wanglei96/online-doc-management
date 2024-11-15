@@ -7,44 +7,28 @@
         <a-divider />
         <a-modal v-model:open="open" title="添加用户" ok-text="添加" cancel-text="取消"  @ok="register">
             <a-form
-            :model="register_info"
-            name="basic"
-            
-            :label-col="{ span: 3 }"
-            :wrapper-col="{ span: 0 }"
-            autocomplete="off"
-            @finish="handleSubmit"
-          >
-            <a-form-item
-              label="用户名"
-              name="username"
-              :rules="[{ required: true, message: '请输入用户名!' }]"
-            >
-              <a-input  v-model:value="register_info.username" />
-            </a-form-item>
-            <a-form-item
-              label="密码"
-              name="password"
-              :rules="[{ required: true, message: '请输入密码!' }]"
-            >
-              <a-input-password  v-model:value="register_info.password" />
-            </a-form-item>
+                :model="register_info"
+                name="basic"
+                :rules="rules"
+                :label-col="{ span: 3 }"
+                :wrapper-col="{ span: 21 }"
+                autocomplete="off"
+                ref="formRef"
+                >
+                <a-form-item label="用户名" name="username">
+                    <a-input v-model:value="register_info.username" />
+                </a-form-item>
+                <a-form-item label="密码" name="password">
+                    <a-input-password v-model:value="register_info.password" />
+                </a-form-item>
+                <a-form-item label="角色" name="is_admin">
+                    <a-select
+                    v-model:value="register_info.is_admin"
+                    :options="options"
+                    ></a-select>
+                </a-form-item>
+                </a-form>
 
-            <a-form-item
-                label="角色"
-                name="is_admin"
-                :rules="[{ required: true, message: '请配置角色!' }]"
-            >
-                <a-select
-                v-model:value="value"
-                style="width: 100%"
-                :options="options"
-                @change="handleChange"
-                
-            ></a-select>
-            </a-form-item>
-             
-              </a-form>
         </a-modal>
     </div>
     
@@ -83,16 +67,59 @@
                         <a v-if = "is_superuser" href="#" >删除</a>
                       </a-popconfirm>
                     <a-divider type="vertical" />
-     
+                            <a-modal v-model:open="edit_open" title="编辑用户" ok-text="提交" cancel-text="取消"  @ok="editUser">
+                            <a-form
+                            :model="editperson_info"
+                            name="basic"
+                            :rules="rules"
+                            :label-col="{ span: 3 }"
+                            :wrapper-col="{ span: 21 }"
+                            autocomplete="off"
+                            ref="formRef"
+                        >
+                            <a-form-item
+                            label="用户名"
+                            name="username"
+                            >
+                            <a-input  v-model:value="editperson_info.username" />
+                            </a-form-item>
+                            <a-form-item
+                            label="新密码"
+                            name="password"
+                            >
+                            <a-input-password  v-model:value="editperson_info.password" />
+                            </a-form-item>
+
+                            <a-form-item
+                                label="角色"
+                                name="is_admin"
+                            >
+                                <a-select
+                                v-model:value="editperson_info.is_admin"
+                                style="width: 100%"
+                                :options="options"
+                            ></a-select>
+                            </a-form-item>
+                            
+                            </a-form>
+        </a-modal>
+                    <a @click="handleeditUser(record)" v-if = "is_superuser">修改</a>
                 </span>
             </template>
         </template>
     </a-table>
 </template>
 <script setup>
-import { user_info , register_user , delete_personal , get_current_user_role } from '@/api';
+import { user_info , register_user , delete_personal , get_current_user_role, edit_user } from '@/api';
 import { ref, onMounted , reactive, computed } from 'vue';
 import { message } from 'ant-design-vue';
+
+const rules = {
+  username: [{ required: true, message: "请输入用户名！", trigger: "blur" }],
+  password: [{ required: true, message: "请输入密码！", trigger: "blur" }],
+  is_admin: [{ required: true, message: "请配置角色！", trigger: "blur" }],
+};
+
 
 const columns = [
     {
@@ -122,11 +149,7 @@ const options = ref([
         label: '管理员',
     },
 ]);
-const value = reactive([]);
-const handleChange = value => {
-    register_info.is_admin = value;
-    console.log(`selected ${value}`);
-};
+
 
 const register_info = reactive({
     "username": ref(""),
@@ -135,18 +158,30 @@ const register_info = reactive({
     
 });
 
-const reset_register_info = () =>{
-   register_info.username = null
-   register_info.password = null
-   register_info.is_admin = ref()
-   value.values = null
+const handleeditUser = (record) => {
+    editperson_info.id = record.id
+    editperson_info.username = record.username
+    editperson_info.is_admin = record.is_admin
+    edit_open.value = true
 }
 
 
-// const del_info = {
-//     'id': ref(),
-//     'is_admin': ref(),
-// }
+const editperson_info = reactive({
+    "id": ref(0), 
+    "username": ref(""),
+    "password": ref(""),
+    "is_admin": ref(0),
+    
+});
+
+const resetForm = (form) => {
+  for (const key in form) {
+    form[key] = typeof form[key] === "object" ? ref("") : null;
+  }
+};
+
+const reset_register_info = () => resetForm(register_info);
+const reset_editperson_info = () => resetForm(editperson_info);
 
 const handleDelete = async (id) => {
     try {
@@ -163,8 +198,13 @@ const handleDelete = async (id) => {
     }
 };
 
+// 表单引用
+const formRef = ref(null);
+
 const register =async () => {
     try {
+        // 调用表单校验
+        await formRef.value.validate();
         const response = await register_user(register_info);
         message.success('添加成功');
         console.info(response)
@@ -175,20 +215,32 @@ const register =async () => {
     }
 };
 
-const handleSubmit =() => {
-    open.value = false;
+const editUser = async () => {
+    try {
+// 调用表单校验
+        await formRef.value.validate();
+        const response = await edit_user(editperson_info);
+        message.success('修改成功');
+        console.info(response)
+        edit_open.value = false;
+        editperson_info.password = ref("");
         getpersonal();
-}
-
+    } catch (error) {
+        console.error(error);
+    }
+};
 
 
 const open = ref(false);
+const edit_open = ref(false);
+
 const showModal = () => {
     open.value = true;
 };
 
 const getpersonal = async () => {
     reset_register_info()
+    reset_editperson_info()
     try {
         const response = await user_info();
         console.log(response.data);

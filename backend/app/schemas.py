@@ -12,6 +12,9 @@ class UserCreate(UserBase):
     password: str
     is_admin: int
 
+class UserEdit(UserCreate):
+    id: int
+
 class UserInfo(UserBase):
     is_admin: int
 

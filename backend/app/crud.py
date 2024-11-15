@@ -20,6 +20,18 @@ def create_user(db: Session, user: schemas.UserCreate, is_admin: int=0):
     db.refresh(db_user)
     return db_user
 
+def edit_users(db: Session, user_info: schemas.UserEdit, is_admin: int=0):
+    user = db.query(models.User).filter(models.User.id == user_info.id).first()
+    if user:
+        if is_admin == 1:
+            user.username = user_info.username
+            user.is_admin = user_info.is_admin
+            if user_info.password is not None: 
+                user.hashed_password = pwd_context.hash(user_info.password)
+            db.commit()
+            db.refresh(user)
+            return {"message": "编辑成功！"}
+    return {"message": "编辑失败！"}
 
 def delete_user(db: Session, user_id: int, is_admin: int=0):
     user = db.query(models.User).filter(models.User.id == user_id).first()
