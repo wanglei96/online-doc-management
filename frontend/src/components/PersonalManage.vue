@@ -1,7 +1,7 @@
 <template>
     <div style="margin-left: 10px;" >
         <a-space style="width: 100%; text-align: right">
-            <a-button v-if = "is_superuser" type="primary" @click="showModal" style="margin-left: 10px;" >添加用户</a-button>    
+            <a-button v-if = "is_superuser" type="primary" @click="showModal" style="margin-left: 15px; margin-top: 20%;" >添加用户</a-button>    
         </a-space>
         
         <a-divider />
@@ -30,23 +30,15 @@
                 </a-form>
 
         </a-modal>
-    </div>
+    
     
     <a-table :columns="columns" :data-source="data">
-        <template #headerCell="{ column }">
-            <template v-if="column.key === 'name'">
-                <span>
-                    <smile-outlined />
-                    Name
-                </span>
-            </template>
-        </template>
 
         <template #bodyCell="{ column, record }">
-            <template v-if="column.key === 'name'">
-                <a>
-                    {{ record.name }}
-                </a>
+            <template v-if="column.key === 'username'">
+                <span>
+                    {{ record.username }}
+                </span>
             </template>
 
         <template v-else-if="column.key === 'is_admin'">
@@ -108,6 +100,7 @@
             </template>
         </template>
     </a-table>
+    </div>
 </template>
 <script setup>
 import { user_info , register_user , delete_personal , get_current_user_role, edit_user } from '@/api';
@@ -123,7 +116,7 @@ const rules = {
 
 const columns = [
     {
-        name: 'Name',
+        title: '用户名',
         dataIndex: 'username',
         key: 'username',
     },

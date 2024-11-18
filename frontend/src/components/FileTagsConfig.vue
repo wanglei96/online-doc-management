@@ -1,7 +1,7 @@
 <template>
     <div style="margin-left: 10px;">
         <a-space style="width: 100%; text-align: right">
-                <a-button v-if = "is_superuser" type="primary" @click="showModal" style="margin-left: 10px;" >添加标签</a-button>    
+                <a-button v-if = "is_superuser" type="primary" @click="showModal" style="margin-left: 15px; margin-top: 20%;" >添加标签</a-button>    
             </a-space>
             <a-modal v-model:open="tag_open" title="添加标签" ok-text="添加" cancel-text="取消"  @ok="add_tag">
                   <a-form
@@ -29,7 +29,7 @@
              
                     </a-form>
               </a-modal>
-
+<a-divider />
             <a-table :columns="columns" :data-source="data">
             <template #headerCell="{ column }">
                 <template v-if="column.key === 'tag_name'">
@@ -64,6 +64,7 @@
                     </span>
                 </template>
             </template>
+        
         </a-table>
         <a-modal v-model:open="edit_tag_open" title="修改标签" ok-text="修改" cancel-text="取消"  @ok="edit_tag">
                           <a-form

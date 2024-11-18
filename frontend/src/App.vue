@@ -7,7 +7,7 @@
     <a-layout>
       <AppHeader v-if="showComponents" />
       <a-layout-content >
-        <div style="padding: 24px; background: #fff; min-height: 600px">
+        <div style="padding: 0px; background: #fff; min-height: 600px">
           <router-view />
         </div>
       </a-layout-content>
