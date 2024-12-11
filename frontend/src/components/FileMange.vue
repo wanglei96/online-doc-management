@@ -167,7 +167,7 @@ document.addEventListener('contextmenu', function (event) {
 
 const handlefilepath = (filename) => {
   
-  return process.env.VUE_APP_API_BASE_URL + '/api/files/' + filename
+  return process.env.VUE_APP_API_BASE_URL + '/files/' + filename
 }
 
 const open_file = ref(false);
